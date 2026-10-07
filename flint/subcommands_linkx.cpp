@@ -413,6 +413,9 @@ void BurnSubCommand::ReportSkippedCables(FwCompsMgr& fwCompsAccess)
     }
 }
 
+/* Every LinkX burn leads with eight 0xFF bytes ahead of the image. */
+#define LINKX_BURN_IMAGE_PREFIX_SIZE 8
+
 FlintStatus BurnSubCommand::BurnLinkX(string deviceName,
                                       int deviceIndex,
                                       int deviceSize,
@@ -435,7 +438,7 @@ FlintStatus BurnSubCommand::BurnLinkX(string deviceName,
         reportErr(true, LINKX_BURN_DEVICE_NOT_SUPPORTED, deviceName.c_str());
         return FLINT_FAILED;
     }
-    vector<u_int8_t> binaryData(8, 0xff);
+    vector<u_int8_t> binaryData(LINKX_BURN_IMAGE_PREFIX_SIZE, 0xff);
     if (downloadTransferNeeded)
     {
         if (!readFromFile(binaryFileName, binaryData))
