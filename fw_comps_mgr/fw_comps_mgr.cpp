@@ -756,6 +756,7 @@ bool FwCompsMgr::controlFsm(fsm_command_t          command,
                 _lastFsmCtrl.component_index =
                   0; // This the FW need - for downstream need to work with 0/device_id or auto_update
             }
+            _lastFsmCtrl.no_stop_on_error = _noStopOnError;
             if (_autoUpdate) {
                 _lastFsmCtrl.auto_update = 1;
                 _lastFsmCtrl.device_index_size = 0;
@@ -1132,7 +1133,8 @@ void FwCompsMgr::SetIndexAndSize(int  deviceIndex,
                                  bool autoUpdate,
                                  bool activationNeeded,
                                  bool downloadTransferNeeded,
-                                 int  activate_delay_sec)
+                                 int  activate_delay_sec,
+                                 bool noStopOnError)
 {
     _linkXDeviceSize = deviceSize;
     _linkXDeviceIndex = deviceIndex;
@@ -1141,6 +1143,9 @@ void FwCompsMgr::SetIndexAndSize(int  deviceIndex,
     _activationNeeded = activationNeeded;
     _downloadTransferNeeded = downloadTransferNeeded;
     _activation_delay_sec = activate_delay_sec;
+    _noStopOnError = noStopOnError;
+    _transferErrorCount = 0;
+    _activateErrorCount = 0;
     _rejectedIndex = -1;
 }
 
@@ -1623,6 +1628,8 @@ bool FwCompsMgr::burnComponents(FwComponent& comp, ProgressCallBackAdvSt* progre
                 DPRINTF(("Downstream LinkX ending has failed!\n"));
                 return false;
             }
+            /* Read before the activation starts - the device clears the counter at the beginning of each stage. */
+            _transferErrorCount = _lastFsmCtrl.error_count;
         }
     }
     if (_activationNeeded == true)
@@ -1644,6 +1651,7 @@ bool FwCompsMgr::burnComponents(FwComponent& comp, ProgressCallBackAdvSt* progre
                     DPRINTF(("Moving from activate state to locked state has failed!\n"));
                     return false;
                 }
+                _activateErrorCount = _lastFsmCtrl.error_count;
             }
         }
         else
