@@ -61,6 +61,7 @@ bool DirectComponentAccess::accessComponent(u_int32_t updateHandle,
                                             const char* currComponentStr,
                                             ProgressCallBackAdvSt* progressFuncAdv)
 {
+    _stoppedByCaller = false;
     int leftSize = (int)size;
     u_int32_t i = 0;
     mcdaReg accessData;
@@ -143,6 +144,7 @@ bool DirectComponentAccess::accessComponent(u_int32_t updateHandle,
             if (progressFuncAdv->func(progressPercentage, stage, PROG_WITH_PRECENTAGE, progressFuncAdv->opaque))
             {
                 setLastFwError(FWCOMPS_ABORTED);
+                _stoppedByCaller = true;
                 return false;
             }
         }
@@ -154,6 +156,7 @@ bool DirectComponentAccess::accessComponent(u_int32_t updateHandle,
         if (progressFuncAdv->func(0, stage, PROG_OK, progressFuncAdv->opaque))
         {
             setLastFwError(FWCOMPS_ABORTED);
+            _stoppedByCaller = true;
             return false;
         }
     }

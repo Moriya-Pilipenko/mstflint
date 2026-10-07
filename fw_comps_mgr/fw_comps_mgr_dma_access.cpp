@@ -226,6 +226,7 @@ bool DMAComponentAccess::accessComponent(u_int32_t updateHandle,
                                          const char* currComponentStr,
                                          ProgressCallBackAdvSt* progressFuncAdv)
 {
+    _stoppedByCaller = false;
 #ifndef UEFI_BUILD
     try
     {
@@ -393,6 +394,7 @@ bool DMAComponentAccess::accessComponent(u_int32_t updateHandle,
             if (progressFuncAdv->func(progressPercentage, stage, PROG_WITH_PRECENTAGE, progressFuncAdv->opaque))
             {
                 setLastError(FWCOMPS_ABORTED);
+                _stoppedByCaller = true;
                 return false;
             }
         }
@@ -404,6 +406,7 @@ bool DMAComponentAccess::accessComponent(u_int32_t updateHandle,
             if (progressFuncAdv->func(0, stage, PROG_OK, progressFuncAdv->opaque))
             {
                 setLastError(FWCOMPS_ABORTED);
+                _stoppedByCaller = true;
                 return false;
             }
         }
